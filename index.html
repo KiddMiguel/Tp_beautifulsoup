@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Recherche d'Articles</title>
+  <style>
+    :root {
+      --primary-color: #3498db;
+      --secondary-color: #2980b9;
+      --accent-color: #e74c3c;
+      --light-gray: #f5f5f5;
+      --border-color: #ddd;
+      --text-color: #333;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      padding: 20px;
+      max-width: 1200px;
+      margin: 0 auto;
+      color: var(--text-color);
+      background-color: #f9f9f9;
+    }
+    
+    h2, h3 {
+      color: var(--secondary-color);
+      border-bottom: 2px solid var(--primary-color);
+      padding-bottom: 10px;
+    }
+    
+    #filterForm {
+      background-color: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      margin-bottom: 25px;
+    }
+    
+    #filterForm label {
+      display: flex;
+      flex-direction: column;
+      min-width: 200px;
+      flex: 1;
+      font-weight: bold;
+      font-size: 14px;
+    }
+    
+    input, select {
+      padding: 10px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      font-size: 14px;
+      margin-top: 5px;
+    }
+    
+    input:focus, select:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 5px rgba(52, 152, 219, 0.5);
+    }
+    
+    button {
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+      align-self: flex-end;
+      margin-top: 25px;
+      transition: background-color 0.2s;
+    }
+    
+    button:hover {
+      background-color: var(--secondary-color);
+    }
+    
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+      background-color: white;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+    
+    th, td {
+      padding: 12px 15px;
+      text-align: left;
+      border-bottom: 1px solid var(--border-color);
+    }
+    
+    th {
+      background-color: var(--primary-color);
+      color: white;
+      font-weight: 600;
+    }
+    
+    tr:nth-child(even) {
+      background-color: var(--light-gray);
+    }
+    
+    tr:hover {
+      background-color: rgba(52, 152, 219, 0.1);
+    }
+    
+    a {
+      color: var(--primary-color);
+      text-decoration: none;
+    }
+    
+    a:hover {
+      text-decoration: underline;
+      color: var(--accent-color);
+    }
+    
+    @media (max-width: 768px) {
+      #filterForm {
+        flex-direction: column;
+      }
+      
+      #filterForm label {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<h2>🔍 Recherche d'Articles</h2>
+
+<form id="filterForm">
+  <label>Auteur : <input type="text" name="auteur"></label>
+  <label>Catégorie : <input type="text" name="categorie"></label>
+  <label>Sous-catégorie : <input type="text" name="sous_categorie"></label>
+  <label>Titre contient : <input type="text" name="titre"></label>
+  <label>Du : <input type="datetime-local" name="start_date"></label>
+  <label>Au : <input type="datetime-local" name="end_date"></label>
+  <button type="submit">Rechercher</button>
+</form>
+
+<h3>📄 Résultats :</h3>
+<table id="resultsTable">
+  <thead>
+    <tr>
+      <th>Titre</th>
+      <th>Auteur</th>
+      <th>Date</th>
+      <th>Catégorie</th>
+      <th>Sous-catégories</th>
+      <th>URL</th>
+    </tr>
+  </thead>
+  <tbody>
+    <!-- Résultats ici -->
+  </tbody>
+</table>
+
+<script>
+  const form = document.getElementById('filterForm');
+  const tableBody = document.querySelector('#resultsTable tbody');
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    tableBody.innerHTML = "<tr><td colspan='6'>Chargement...</td></tr>";
+
+    // Récupère les données du formulaire
+    const formData = new FormData(form);
+    const params = {};
+
+    // Remplir l'objet params seulement avec des valeurs non vides
+    formData.forEach((value, key) => {
+      if (value) {
+        params[key] = value;
+      }
+    });
+
+    // Si aucun paramètre n'est rempli, on ne crée pas de query string
+    const queryString = new URLSearchParams(params).toString();
+    const url = queryString ? `http://localhost:5000/articles?${queryString}` : 'http://localhost:5000/articles';
+
+    try {
+      const response = await fetch(url);
+      const data = await response.json();
+
+      if (Array.isArray(data)) {
+        tableBody.innerHTML = "";
+        if (data.length === 0) {
+          tableBody.innerHTML = "<tr><td colspan='6'>Aucun article trouvé.</td></tr>";
+        } else {
+          data.forEach(article => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+              <td>${article.titre}</td>
+              <td>${article.auteur}</td>
+              <td>${article.date}</td>
+              <td>${article.categorie}</td>
+              <td>${(article.sous_categories || []).join(', ')}</td>
+              <td><a href="${article.url}" target="_blank">Lien</a></td>
+            `;
+            tableBody.appendChild(row);
+          });
+        }
+      } else {
+        tableBody.innerHTML = "<tr><td colspan='6'>Erreur de format de réponse.</td></tr>";
+      }
+    } catch (error) {
+      tableBody.innerHTML = `<tr><td colspan="6">Erreur lors de la requête : ${error}</td></tr>`;
+    }
+  });
+</script>
+
+</body>
+</html>

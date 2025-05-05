@@ -1,0 +1,40 @@
+# Python
+*.pyc
+*.pyo
+__pycache__/
+
+# Environnement virtuel
+venv/
+.env/
+
+# Flask
+instance/
+.webassets-cache
+
+# MongoDB
+*.mongodb
+
+# Fichiers de log
+*.log
+
+# IDEs
+.vscode/
+.idea/
+
+# Fichiers système
+.DS_Store
+Thumbs.db
+
+# Node.js (si tu utilises un front-end avec Node.js)
+node_modules/
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+
+# Fichiers de build (si tu utilises des outils de build pour le front-end)
+build/
+dist/
+
+# Fichiers de configuration secrets (évite d'inclure tes variables sensibles)
+config.py
+*.env
