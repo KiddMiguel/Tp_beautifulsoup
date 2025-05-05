@@ -166,22 +166,37 @@
   const form = document.getElementById('filterForm');
   const tableBody = document.querySelector('#resultsTable tbody');
 
+  function formatDate(dateString) {
+    if (!dateString) return 'Date non disponible';
+    
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return dateString;
+      
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      
+      return `${year}-${month}-${day}`;
+    } catch (error) {
+      console.error("Erreur lors du formatage de la date:", error);
+      return dateString;
+    }
+  }
+
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     tableBody.innerHTML = "<tr><td colspan='6'>Chargement...</td></tr>";
 
-    // Récupère les données du formulaire
     const formData = new FormData(form);
     const params = {};
 
-    // Remplir l'objet params seulement avec des valeurs non vides
     formData.forEach((value, key) => {
       if (value) {
         params[key] = value;
       }
     });
 
-    // Si aucun paramètre n'est rempli, on ne crée pas de query string
     const queryString = new URLSearchParams(params).toString();
     const url = queryString ? `http://localhost:5000/articles?${queryString}` : 'http://localhost:5000/articles';
 
@@ -199,7 +214,7 @@
             row.innerHTML = `
               <td>${article.titre}</td>
               <td>${article.auteur}</td>
-              <td>${article.date}</td>
+              <td>${formatDate(article.date)}</td>
               <td>${article.categorie}</td>
               <td>${(article.sous_categories || []).join(', ')}</td>
               <td><a href="${article.url}" target="_blank">Lien</a></td>
